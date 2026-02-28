@@ -56,8 +56,8 @@
               "listen": "test",
               "script": {
                 "exec": [
-                  "pm.test(\"Status code is 200, 201, 400 or 401\", function () {\r",
-                  "  pm.expect([200, 201, 400, 401]).to.include(pm.response.code);\r",
+                  "pm.test(\"Status code is 200, 201 or 400\", function () {\r",
+                  "  pm.expect([200, 201, 400]).to.include(pm.response.code);\r",
                   "});\r",
                   "\r",
                   "pm.test(\"If success, save favourite_id\", function () {\r",
@@ -69,12 +69,12 @@
                   "    pm.environment.set(\"favourite_id\", body.id);\r",
                   "\r",
                   "  } else if (code === 400) {\r",
-                  "    console.log(\"POST/favourites bad request:\", pm.response.text());\r",
+                  "    console.log(\"POST favourites bad request:\", pm.response.text());\r",
                   "    pm.expect(pm.response.text().toLowerCase()).to.include(\"bad request\");\r",
+                  "  }\r",
                   "\r",
-                  "  } else if (code === 401) {\r",
-                  "    console.log(\"POST /favourites unauthorized:\", pm.response.text());\r",
-                  "    pm.expect(pm.response.text().toLowerCase()).to.include(\"x-api-key\");\r",
+                  "  if (code === 401) {\r",
+                  "    pm.expect.fail(\"Unauthorized: API key not injected correctly\");\r",
                   "  }\r",
                   "});"
                 ],
@@ -126,7 +126,6 @@
               "listen": "test",
               "script": {
                 "exec": [
-                  "const favId = pm.environment.get(\"favourite_id\");",
                   "pm.test(\"DELETE favourites\", function () {\r",
                   "  if (!favId) {\r",
                   "    console.log(\"No favourite_id -> skipping DELETE validation\");\r",
