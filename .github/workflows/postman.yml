@@ -25,4 +25,4 @@ jobs:
         run: |
           newman run postman/api_test_framework.collection.json \
             -e postman/api_test_framework.environment.json \
-            --env-var "CAT_API_KEY=$CAT_API_KEY"
+            --env-var "x-api-key=$API_KEY"
