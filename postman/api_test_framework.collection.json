@@ -126,6 +126,7 @@
               "listen": "test",
               "script": {
                 "exec": [
+                  "const favId = pm.environment.get(\"favourite_id\");",
                   "pm.test(\"DELETE favourites\", function () {\r",
                   "  if (!favId) {\r",
                   "    console.log(\"No favourite_id -> skipping DELETE validation\");\r",
