@@ -7,6 +7,7 @@ on:
 jobs:
   newman:
     runs-on: ubuntu-latest
+
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -16,13 +17,32 @@ jobs:
         with:
           node-version: 20
 
-      - name: Install Newman
-        run: npm install -g newman
+      - name: Install Newman + reporters
+        run: |
+          npm install -g newman newman-reporter-htmlextra newman-reporter-junitfull
 
-      - name: Run collection
+      - name: Run collection (generate reports)
         env:
           CAT_API_KEY: ${{ secrets.CAT_API_KEY }}
         run: |
+          mkdir -p reports
           newman run postman/api_test_framework.collection.json \
             -e postman/api_test_framework.environment.json \
-            --env-var "x-api-key=$CAT_API_KEY"
+            --env-var "x-api-key=$CAT_API_KEY" \
+            -r cli,htmlextra,junitfull \
+            --reporter-htmlextra-export reports/newman-report.html \
+            --reporter-junitfull-export reports/junit-report.xml
+
+      - name: Upload HTML report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: newman-html-report
+          path: reports/newman-report.html
+
+      - name: Upload JUnit XML report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: newman-junit-report
+          path: reports/junit-report.xml
