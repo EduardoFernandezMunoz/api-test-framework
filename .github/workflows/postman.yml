@@ -1,0 +1,28 @@
+name: Postman API Tests with Newman
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  newman:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Install Newman
+        run: npm install -g newman
+
+      - name: Run collection
+        env:
+          CAT_API_KEY: ${{ secrets.CAT_API_KEY }}
+        run: |
+          newman run postman/api_test_framework.collection.json \
+            -e postman/Api_test_framework.environment.json \
+            --env-var "CAT_API_KEY=$CAT_API_KEY"
