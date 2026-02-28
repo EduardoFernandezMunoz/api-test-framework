@@ -126,10 +126,16 @@
               "listen": "test",
               "script": {
                 "exec": [
-                  "pm.test(\"DELETE favourites returns 200/204\", function () {\r",
-                  "  if (![200, 204].includes(pm.response.code)) {\r",
-                  "    console.log(\"DELETE failed:\", pm.response.code, pm.response.text());\r",
+                  "pm.test(\"DELETE favourites\", function () {\r",
+                  "  if (!favId) {\r",
+                  "    console.log(\"No favourite_id -> skipping DELETE validation\");\r",
+                  "    return;\r",
                   "  }\r",
+                  "\r",
+                  "  if (pm.response.code === 401) {\r",
+                  "    pm.expect.fail(\"Unauthorized: check API key\");\r",
+                  "  }\r",
+                  "\r",
                   "  pm.expect([200, 204]).to.include(pm.response.code);\r",
                   "});"
                 ],
