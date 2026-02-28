@@ -1,33 +1,21 @@
-# =========================
-# Secrets and environment
-# =========================
+# environment files
 .env
 
-# =========================
-# Node / Newman
-# =========================
+# node
 node_modules/
 
-# =========================
-# OS / system files
-# =========================
+# logs
+*.log
+
+# OS files
 .DS_Store
 Thumbs.db
 
-# =========================
-# Logs
-# =========================
-*.log
-
-# =========================
-# Python (por si añades API tests en el futuro)
-# =========================
+# python
 .venv/
 __pycache__/
 .pytest_cache/
 
-# =========================
-# IDEs
-# =========================
+# editors
 .vscode/
 .idea/
