@@ -1,5 +1,5 @@
 # API Test Automation Framework (Postman + Newman + CI/CD)
-End-to-end API test automation framework built with Postman and executed in a CI/CD pipeline using Newman and GitHub Actions.Focused on validating REST API functionality, response integrity, and system robustness through realistic and repeatable test workflows.
+End-to-end API test automation framework built with Postman and executed in a CI/CD pipeline using Newman and GitHub Actions. Focused on validating REST API functionality, response integrity, and system robustness through realistic and repeatable test workflows.
 
 ## Test Structure
 ### Smoke Tests
