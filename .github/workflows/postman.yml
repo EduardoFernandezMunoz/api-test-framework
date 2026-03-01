@@ -21,7 +21,7 @@ jobs:
         run: |
           npm install -g newman newman-reporter-htmlextra newman-reporter-junitfull
 
-      - name: Run collection (generate reports)
+      - name: Run Smoke Tests
         env:
           CAT_API_KEY: ${{ secrets.CAT_API_KEY }}
         run: |
@@ -29,9 +29,22 @@ jobs:
           newman run postman/api_test_framework.collection.json \
             -e postman/api_test_framework.environment.json \
             --env-var "x-api-key=$CAT_API_KEY" \
+            --folder "favourites" \
             -r cli,htmlextra,junitfull \
-            --reporter-htmlextra-export reports/newman-report.html \
-            --reporter-junitfull-export reports/junit-report.xml
+            --reporter-htmlextra-export reports/smoke-report.html \
+            --reporter-junitfull-export reports/smoke-junit.xml
+
+      - name: Run Negative Tests
+        env:
+          CAT_API_KEY: ${{ secrets.CAT_API_KEY }}
+        run: |
+          newman run postman/api_test_framework.collection.json \
+            -e postman/api_test_framework.environment.json \
+            --env-var "x-api-key=$CAT_API_KEY" \
+            --folder "negative testing" \
+            -r cli,htmlextra,junitfull \
+            --reporter-htmlextra-export reports/negative-report.html \
+            --reporter-junitfull-export reports/negative-junit.xml
 
       - name: Upload HTML report
         if: always()
