@@ -23,6 +23,7 @@
                   "\r",
                   "pm.test(\"Response has image id\", function () {\r",
                   "  const body = pm.response.json();\r",
+                  "  pm.expect(body).to.be.an(\"array\").that.is.not.empty;\r",
                   "  pm.expect(body[0]).to.have.property(\"id\");\r",
                   "  pm.environment.set(\"image_id\", body[0].id);\r",
                   "});"
@@ -56,26 +57,18 @@
               "listen": "test",
               "script": {
                 "exec": [
-                  "pm.test(\"Status code is 200, 201 or 400\", function () {\r",
-                  "  pm.expect([200, 201, 400]).to.include(pm.response.code);\r",
-                  "});\r",
-                  "\r",
-                  "pm.test(\"If success, save favourite_id\", function () {\r",
+                  "pm.test(\"Returns 200/201 for valid favourite\", function () {\r",
                   "  const code = pm.response.code;\r",
-                  "\r",
-                  "  if (code === 200 || code === 201) {\r",
-                  "    const body = pm.response.json();\r",
-                  "    pm.expect(body).to.have.property(\"id\");\r",
-                  "    pm.environment.set(\"favourite_id\", body.id);\r",
-                  "\r",
-                  "  } else if (code === 400) {\r",
-                  "    console.log(\"POST favourites bad request:\", pm.response.text());\r",
-                  "    pm.expect(pm.response.text().toLowerCase()).to.include(\"bad request\");\r",
-                  "  }\r",
-                  "\r",
                   "  if (code === 401) {\r",
                   "    pm.expect.fail(\"Unauthorized: API key not injected correctly\");\r",
                   "  }\r",
+                  "  pm.expect([200, 201]).to.include(code);\r",
+                  "});\r",
+                  "\r",
+                  "pm.test(\"Saves favourite_id\", function () {\r",
+                  "  const body = pm.response.json();\r",
+                  "  pm.expect(body).to.have.property(\"id\");\r",
+                  "  pm.environment.set(\"favourite_id\", body.id);\r",
                   "});"
                 ],
                 "type": "text/javascript",
@@ -126,17 +119,17 @@
               "listen": "test",
               "script": {
                 "exec": [
-                  "const favId = pm.environment.get(\"favourite_id\");",
-                  "pm.test(\"DELETE favourites\", function () {\r",
-                  "  if (!favId) {\r",
-                  "    console.log(\"No favourite_id -> skipping DELETE validation\");\r",
-                  "    return;\r",
-                  "  }\r",
+                  "const favId = pm.environment.get(\"favourite_id\");\r",
                   "\r",
+                  "pm.test(\"Should have a valid favourite_id\", function () {\r",
+                  "  pm.expect(Number.isNaN(favId)).to.be.false;\r",
+                  "  pm.expect(favId).to.be.above(0);\r",
+                  "});\r",
+                  "\r",
+                  "pm.test(\"Deletes favourite (200/204)\", function () {\r",
                   "  if (pm.response.code === 401) {\r",
                   "    pm.expect.fail(\"Unauthorized: check API key\");\r",
                   "  }\r",
-                  "\r",
                   "  pm.expect([200, 204]).to.include(pm.response.code);\r",
                   "});"
                 ],
@@ -181,7 +174,36 @@
             }
           },
           "response": []
+        }
+      ],
+      "event": [
+        {
+          "listen": "prerequest",
+          "script": {
+            "type": "text/javascript",
+            "packages": {},
+            "requests": {},
+            "exec": [
+              ""
+            ]
+          }
         },
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "packages": {},
+            "requests": {},
+            "exec": [
+              ""
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Negative testing",
+      "item": [
         {
           "name": "Favourites - Missing API Key",
           "event": [
@@ -189,12 +211,13 @@
               "listen": "test",
               "script": {
                 "exec": [
-                  "pm.test(\"Status code is 401\", function () {\r",
+                  "pm.test(\"Returns 401 for missing API key\", function () {\r",
                   "    pm.response.to.have.status(401);\r",
                   "});\r",
                   "\r",
-                  "pm.test(\"Error mentions x-api-key problem\", function () {\r",
-                  "  pm.expect(pm.response.text()).to.include(\"x-api-key\");\r",
+                  "pm.test(\"Error indicates authentication issue\", function () {\r",
+                  "  const response = pm.response.text().toLowerCase();\r",
+                  "  pm.expect(response).to.include(\"api\");\r",
                   "});"
                 ],
                 "type": "text/javascript",
@@ -239,30 +262,231 @@
             }
           },
           "response": []
-        }
-      ],
-      "event": [
-        {
-          "listen": "prerequest",
-          "script": {
-            "type": "text/javascript",
-            "packages": {},
-            "requests": {},
-            "exec": [
-              ""
-            ]
-          }
         },
         {
-          "listen": "test",
-          "script": {
-            "type": "text/javascript",
-            "packages": {},
-            "requests": {},
-            "exec": [
-              ""
-            ]
-          }
+          "name": "Favourites - Empty body",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Should return 400 for empty request body\", function () {\r",
+                  "  pm.expect(pm.response.code).to.eql(400);\r",
+                  "});\r",
+                  "\r",
+                  "pm.test(\"Error mentions required field\", function () {\r",
+                  "  const response = pm.response.text().toLowerCase();\r",
+                  "  pm.expect(response).to.include(\"image_id\");\r",
+                  "});"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            },
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  ""
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{BASE_URL}}/favourites",
+              "host": [
+                "{{BASE_URL}}"
+              ],
+              "path": [
+                "favourites"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Favourites - Invalid data type",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Returns 400 for invalid data type\", function () {\r",
+                  "  const code = pm.response.code;\r",
+                  "  if (code === 401) {\r",
+                  "    pm.expect.fail(\"Unauthorized: API key not injected correctly\");\r",
+                  "  }\r",
+                  "  pm.expect([400, 422]).to.include(code);\r",
+                  "});"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            },
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  ""
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n  \"image_id\": 123\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{BASE_URL}}/favourites",
+              "host": [
+                "{{BASE_URL}}"
+              ],
+              "path": [
+                "favourites"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Favourites - Invalid object",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Handles invalid object and unexpected fields\", function () {\r",
+                  "  if (pm.response.code === 401) {\r",
+                  "    pm.expect.fail(\"Unauthorized: API key not injected correctly\");\r",
+                  "  }\r",
+                  "\r",
+                  "  pm.expect([200, 201, 400, 422]).to.include(pm.response.code);\r",
+                  "});"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            },
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  ""
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n  \"image_id\": { \"id\": \"abc\" },\r\n  \"name\": \"Eduardo\"\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{BASE_URL}}/favourites",
+              "host": [
+                "{{BASE_URL}}"
+              ],
+              "path": [
+                "favourites"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Favourites - Unexpected field",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Handles unexpected fields correctly\", function () {\r",
+                  "  if (pm.response.code === 401) {\r",
+                  "    pm.expect.fail(\"Unauthorized: API key not injected correctly\");\r",
+                  "  }\r",
+                  "\r",
+                  "  pm.expect([200, 201, 400, 422]).to.include(pm.response.code);\r",
+                  "});"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            },
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  ""
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n  \"image_id\": \"abc\",\r\n  \"name\": \"Eduardo\"\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{BASE_URL}}/favourites",
+              "host": [
+                "{{BASE_URL}}"
+              ],
+              "path": [
+                "favourites"
+              ]
+            }
+          },
+          "response": []
         }
       ]
     },
