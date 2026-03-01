@@ -21,15 +21,17 @@ jobs:
         run: |
           npm install -g newman newman-reporter-htmlextra newman-reporter-junitfull
 
-      - name: Run Smoke Tests
+      - name: Create reports folder
+        run: mkdir -p reports
+
+      - name: Run Smoke Tests (Favourites)
         env:
           CAT_API_KEY: ${{ secrets.CAT_API_KEY }}
         run: |
-          mkdir -p reports
           newman run postman/api_test_framework.collection.json \
             -e postman/api_test_framework.environment.json \
             --env-var "x-api-key=$CAT_API_KEY" \
-            --folder "favourites" \
+            --folder "Favourites" \
             -r cli,htmlextra,junitfull \
             --reporter-htmlextra-export reports/smoke-report.html \
             --reporter-junitfull-export reports/smoke-junit.xml
@@ -41,7 +43,7 @@ jobs:
           newman run postman/api_test_framework.collection.json \
             -e postman/api_test_framework.environment.json \
             --env-var "x-api-key=$CAT_API_KEY" \
-            --folder "negative testing" \
+            --folder "Negative testing" \
             -r cli,htmlextra,junitfull \
             --reporter-htmlextra-export reports/negative-report.html \
             --reporter-junitfull-export reports/negative-junit.xml
